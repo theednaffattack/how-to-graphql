@@ -7,34 +7,67 @@ const bodyParser = require("body-parser");
 // for you, based on your schemna
 const { graphqlExpress, graphiqlExpress } = require("apollo-server-express");
 
+const { execute, subscribe } = require("graphql");
+const { createServer } = require("http");
+const { SubscriptionServer } = require("subscriptions-transport-ws");
+
+const { authenticate } = require("./authentication");
+
 const schema = require("./schema");
 
 const connectMongo = require("./mongo-connector");
+
+const buildDataLoaders = require("./dataloaders");
 
 const start = async () => {
   const mongo = await connectMongo();
 
   var app = express();
-  app.use(
-    "/graphql",
-    bodyParser.json(),
-    graphqlExpress({
-      context: { mongo },
+
+  const { formatError } = require("./formatError");
+
+  const buildOptions = async (req, res) => {
+    const user = await authenticate(req, mongo.Users);
+    return {
+      context: {
+        dataloaders: buildDataLoaders(mongo),
+        mongo,
+        user
+      }, // this context object is passed to all resolvers.
+      formatError,
       schema
-    })
-  );
+    };
+  };
+
+  const PORT = 3000;
+
+  app.use("/graphql", bodyParser.json(), graphqlExpress(buildOptions));
 
   app.use(
     "/graphiql",
     graphiqlExpress({
-      endpointURL: "/graphql"
+      endpointURL: "/graphql",
+      passHeader: `'Authorization': 'bearer token-eddienaff@gmail.com'`,
+      subscriptionsEndpoint: `ws://localhost:${PORT}/subscriptions`
     })
   );
+  //   app.listen(PORT, () => {
+  //     console.log(
+  //       `Hackernews GraphQL server running on port http://localhost:${PORT}.`
+  //     );
+  //   });
 
-  const PORT = 3000;
-  app.listen(PORT, () => {
+  const server = createServer(app);
+
+  server.listen(PORT, () => {
+    SubscriptionServer.create(
+      { execute, subscribe, schema },
+      { server, path: "/subscriptions" }
+    );
     console.log(
-      `Hackernews GraphQL server running on port http://localhost:${PORT}.`
+      `\nHackernews GraphQL server running at: http://localhost:${PORT}`,
+      `\nHackernews GraphQL subscriptions server running at: http://localhost:${PORT}/subscriptions`,
+      `\nHackernews GraphiQL window running at: http://localhost:${PORT}/graphiql`
     );
   });
 };

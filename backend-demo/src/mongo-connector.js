@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { Logger, MongoClient } = require("mongodb");
 
 const MONGO_URL = "mongodb://localhost/hackernews";
 
@@ -7,5 +7,17 @@ const MONGO_URL = "mongodb://localhost/hackernews";
 // since connecting is an asynchronous operation, the function needs to be annotated with the async keyword
 module.exports = async () => {
   const db = await MongoClient.connect(MONGO_URL);
-  return { Links: db.collection("links") };
+
+  // let logCount = 0;
+  // Logger.setCurrentLogger((msg, state) => {
+  //   console.log(`MONGO DB REQUEST ${++logCount}: ${msg}`);
+  // });
+  // Logger.setLevel("debug");
+  // Logger.filter("class", ["Cursor"]);
+
+  return {
+    Links: db.collection("links"),
+    Users: db.collection("users"),
+    Votes: db.collection("votes")
+  };
 };
