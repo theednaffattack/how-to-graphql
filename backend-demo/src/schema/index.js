@@ -12,7 +12,17 @@ const typeDefs = `
     }
 
     type Query {
-        allLinks: [Link!]!
+        allLinks(
+            filter: LinkFilter,
+            skip: Int,
+            first: Int
+        ): [Link!]!
+    }
+
+    input LinkFilter {
+        OR: [LinkFilter!]
+        description_contains: String
+        url_contains: String
     }
 
     type Mutation {
