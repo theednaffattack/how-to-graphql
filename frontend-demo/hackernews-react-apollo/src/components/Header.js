@@ -2,8 +2,11 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { withRouter } from "react-router";
 
+import { GC_USER_ID, GC_AUTH_TOKEN } from "../constants";
+
 class Header extends Component {
   render() {
+    const userId = localStorage.getItem(GC_USER_ID);
     return (
       <div className="flex pal justify-between nowrap orange">
         <div className="flex flex-fixed black">
@@ -11,10 +14,32 @@ class Header extends Component {
           <Link to="/" className="ml1 no-underline black">
             new
           </Link>
-          <div className="ml1">|</div>
-          <Link to="/create" className="ml1 no-underline black">
-            Submit
-          </Link>
+          {userId && (
+            <div className="flex">
+              <div className="ml1">|</div>
+              <Link to="/create" className="ml1 no-underline black">
+                Submit
+              </Link>
+            </div>
+          )}
+        </div>
+        <div className="flex flex-fixed">
+          {userId ? (
+            <div
+              className="ml1 pointer"
+              onClick={() => {
+                localStorage.removeItem(GC_USER_ID);
+                localStorage.removeItem(GC_AUTH_TOKEN);
+                this.props.history.push(`/`);
+              }}
+            >
+              logout
+            </div>
+          ) : (
+            <Link to="/login" className="ml1 no-underline black">
+              login
+            </Link>
+          )}
         </div>
       </div>
     );

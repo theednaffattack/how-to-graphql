@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 // import logo from "../logo.svg";
 import "../styles/App.css";
+import Login from "./Login";
 import CreateLink from "./CreateLink";
 import LinkList from "./LinkList";
 import Header from "./Header";
@@ -15,6 +16,7 @@ class App extends Component {
           <Switch>
             <Route exact path="/" component={LinkList} />
             <Route exact path="/create" component={CreateLink} />
+            <Route exact path="/login" component={Login} />
           </Switch>
         </div>
       </div>

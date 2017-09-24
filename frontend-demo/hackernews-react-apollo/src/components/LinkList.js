@@ -4,19 +4,6 @@ import Link from "./Link";
 
 class LinkList extends Component {
   render() {
-    // const linksToRender = [
-    //   {
-    //     id: "1",
-    //     description: "The Coolest GraphQL Backend 😎",
-    //     url: "https://www.graph.cool"
-    //   },
-    //   {
-    //     id: "2",
-    //     description: "The Best GraphQL Client",
-    //     url: "http://dev.apollodata.com/"
-    //   }
-    // ];
-
     if (this.props.allLinksQuery && this.props.allLinksQuery.loading) {
       return <div>Loading</div>;
     }
@@ -28,7 +15,11 @@ class LinkList extends Component {
     const linksToRender = this.props.allLinksQuery.allLinks;
 
     return (
-      <div>{linksToRender.map(link => <Link key={link.id} link={link} />)}</div>
+      <div>
+        {linksToRender.map((link, index) => (
+          <Link key={link.id} index={index} link={link} />
+        ))}
+      </div>
     );
   }
 }
@@ -40,6 +31,16 @@ const ALL_LINKS_QUERY = gql`
       createdAt
       url
       description
+      postedBy {
+        id
+        name
+      }
+      votes {
+        id
+        user {
+          id
+        }
+      }
     }
   }
 `;
