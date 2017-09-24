@@ -1,7 +1,7 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
 # internal docs
-../docs-frontend
+docs-frontend
 
 # dependencies
 /node_modules
