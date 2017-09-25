@@ -8,12 +8,31 @@ import {
   createNetworkInterface,
   ApolloClient
 } from "react-apollo";
+import {
+  SubscriptionClient,
+  addGraphQLSubscriptions
+} from "subscriptions-transport-ws";
 import { BrowserRouter } from "react-router-dom";
 import { GC_AUTH_TOKEN } from "./constants";
 
 const networkInterface = createNetworkInterface({
   uri: "https://api.graph.cool/simple/v1/cj7wp6tp20ky8014580j72nzn"
 });
+
+const wsClient = new SubscriptionClient(
+  "wss://subscriptions.graph.cool/v1/cj7wp6tp20ky8014580j72nzn",
+  {
+    reconnect: "true",
+    connectionParams: {
+      authToken: localStorage.getItem(GC_AUTH_TOKEN)
+    }
+  }
+);
+
+const networkInterfaceWithSubscriptions = addGraphQLSubscriptions(
+  networkInterface,
+  wsClient
+);
 
 networkInterface.use([
   {
@@ -29,7 +48,7 @@ networkInterface.use([
 ]);
 
 const client = new ApolloClient({
-  networkInterface
+  networkInterface: networkInterfaceWithSubscriptions
 });
 
 ReactDOM.render(
