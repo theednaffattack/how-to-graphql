@@ -17,6 +17,12 @@ const typeDefs = `
             skip: Int,
             first: Int
         ): [Link!]!
+        allPolls(
+            filter: PollFilter,
+            skip: Int,
+            first: Int
+        ): [Poll!]!
+        getPoll(id: ID!): Poll
     }
 
     input LinkFilter {
@@ -24,10 +30,23 @@ const typeDefs = `
         description_contains: String
         url_contains: String
     }
+    
+    input PollFilter {
+        OR: [PollFilter!]
+        voteOptions_contains: String
+        title_contains: String
+    }
 
     type Mutation {
         createLink(url: String!, description: String!): Link
+        createPoll(title: String!, options: [String!]!, description: String!): Poll
+        createVote(voteOption: ID!): Vote
+        createVoteOption(pollId: ID!): VoteOption
+        createQuestion(text: String!, pollId: ID!): Question
         createVote(linkId: ID!): Vote
+        createPollVote(questionId: ID!): PollVote
+        # updatePoll(id: ID!, title: String, url: String, votes: Int): Poll  
+        # updateOrCreatePoll(update: UpdatePoll!, create: CreatePoll!): Poll
 
         # Note that this mutation could receive the email and password directly
         # as arguments, with no problem. You're just using this "authProvider"
@@ -48,7 +67,38 @@ const typeDefs = `
         name: String!
         email: String
         password: String
+        roles: [Role!]!
         votes: [Vote!]!
+    }
+
+    type Poll {
+        id: ID!
+        postedBy: User
+        title: String!
+        options: [String!]!
+        voteOptions: [VoteOption!]!
+        votes: [Vote!]!
+    }
+
+    type Question {
+        id: ID!
+        poll: Poll!
+        text: String!
+    }
+    
+    type PollVote {
+        id: ID!
+        user: User!
+        question: Question!
+    }
+
+    type VoteOption {
+      id: ID!
+      text: String!
+      user: User!
+      poll: Poll!
+      votes: [Vote!]!
+      votesCount: Int!
     }
 
     input AuthProviderSignupData {
@@ -66,17 +116,42 @@ const typeDefs = `
         link: Link!
     }
 
+    type Role {
+        id: ID!
+        type: String!
+        voteOption: VoteOption!
+    }
+
     type Subscription {
         Link(filter: LinkSubscriptionFilter): LinkSubscriptionPayload
+        Poll(filter: PollSubscriptionFilter): PollSubscriptionPayload
+        Vote(filter: VoteSubscriptionFilter): VoteSubscriptionPayload      
     }
 
     input LinkSubscriptionFilter {
+        mutation_in: [_ModelMutationType!]
+    }
+    
+    input PollSubscriptionFilter {
         mutation_in: [_ModelMutationType!]
     }
 
     type LinkSubscriptionPayload {
         mutation: _ModelMutationType!
         node: Link
+    }
+    
+    input VoteSubscriptionFilter {
+        mutation_in: [_ModelMutationType!]
+    }
+  
+    type VoteSubscriptionPayload {
+        mutation: _ModelMutationType!
+        node: Vote
+    }
+    type PollSubscriptionPayload {
+        mutation: _ModelMutationType!
+        node: Poll
     }
 
     enum _ModelMutationType {

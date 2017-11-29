@@ -6,12 +6,13 @@ const bodyParser = require("body-parser");
 // this package will handle GraphQL server requests and responses
 // for you, based on your schemna
 const { graphqlExpress, graphiqlExpress } = require("apollo-server-express");
-
+const cors = require("cors");
 const { execute, subscribe } = require("graphql");
 const { createServer } = require("http");
 const { SubscriptionServer } = require("subscriptions-transport-ws");
 
 const { authenticate } = require("./authentication");
+const { configAuth } = require("../configAuth");
 
 const schema = require("./schema");
 
@@ -40,6 +41,10 @@ const start = async () => {
   };
 
   const PORT = 3000;
+  const PORT2 = 3001;
+
+  // Add before the routes for graphql/graphiql
+  app.use("*", cors({ origin: `http://localhost:${PORT2}` }));
 
   app.use("/graphql", bodyParser.json(), graphqlExpress(buildOptions));
 
@@ -66,8 +71,12 @@ const start = async () => {
     );
     console.log(
       `\nHackernews GraphQL server running at: http://localhost:${PORT}`,
-      `\nHackernews GraphQL subscriptions server running at: http://localhost:${PORT}/subscriptions`,
-      `\nHackernews GraphiQL window running at: http://localhost:${PORT}/graphiql`
+      `\nHackernews GraphQL subscriptions server running at: http://localhost:${
+        PORT
+      }/subscriptions`,
+      `\nHackernews GraphiQL window running at: http://localhost:${
+        PORT
+      }/graphiql`
     );
   });
 };
